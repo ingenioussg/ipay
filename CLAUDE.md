@@ -12,7 +12,7 @@ docker compose up -d db                                   # local Postgres on 12
 .venv\Scripts\python routing.py                           # http://127.0.0.1:4000
 ```
 
-Secrets live in `.env` (gitignored; `.env.example` lists the keys). The project has no test suite, by the owner's choice. Check each change ad hoc within its blast radius, per the surgical-testing skill: an import or compile check, a request to the touched route, or a known-numbers check for money logic.
+Secrets live in `.env` (gitignored; `.env.example` lists the keys). The project has no test suite, by the owner's choice. Check each change ad hoc within its blast radius, per the surgical-testing skill: an import or compile check, a request to the touched route, or a known-numbers check for money logic. Money-logic checks use the official cases in [docs/design/verification.md](docs/design/verification.md) and are logged there, with the commit, before the change is committed.
 
 ## Always-on skills: every session, every prompt, no invocation needed
 

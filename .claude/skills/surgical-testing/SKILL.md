@@ -51,7 +51,7 @@ Only an explicit owner request in the current prompt (for example "run the full 
 
 - Python module: `python -m py_compile <file>`, then pytest for that module and its direct dependents only (`pytest tests/test_x.py -k <name>`).
 - Flask route or template: one request to the touched route, expect 200 and a render.
-- Payroll or statutory calculation (CPF, SDL, SHG, FWL, proration, OT, leave pay, net pay): one case with known numbers, compare to the cent. Use the worked examples in docs/legacy/ where they exist.
+- Payroll or statutory calculation (CPF, SDL, SHG, FWL, EPF, SOCSO, EIS, PCB, proration, OT, leave pay, net pay): run the affected official cases from docs/design/verification.md and compare to the cent. Log each case run in that file's Log, with the commit, before committing.
 - File export (CPF e-submission, bank GIRO, IRAS file or API payload): generate one file from a fixture and diff it against the expected layout.
 - DB migration: run it on a copy or inside a transaction, then one query on the changed table.
 - Legacy spec claim in docs/legacy/: check the cited File.cs:line with Grep or Read directly. No verify agents.

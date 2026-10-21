@@ -10,10 +10,9 @@ Flask, PostgreSQL 16 (one `platform` schema plus one schema per company, `co_000
 docker compose up -d db                                   # local Postgres on 127.0.0.1:5433
 .venv\Scripts\python -m schemaconnect.postgres.migrations.migrate
 .venv\Scripts\python routing.py                           # http://127.0.0.1:4000
-.venv\Scripts\python -m pytest tests/test_x.py            # test only the blast radius
 ```
 
-Secrets live in `.env` (gitignored; `.env.example` lists the keys). Tests use a throwaway `ipay_test` database.
+Secrets live in `.env` (gitignored; `.env.example` lists the keys). The project has no test suite, by the owner's choice. Check each change ad hoc within its blast radius, per the surgical-testing skill: an import or compile check, a request to the touched route, or a known-numbers check for money logic.
 
 ## Always-on skills: every session, every prompt, no invocation needed
 

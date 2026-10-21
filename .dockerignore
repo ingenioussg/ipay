@@ -6,7 +6,6 @@
 !.env.example
 documents
 docs
-tests
 .claude
 .pytest_cache
 **/__pycache__

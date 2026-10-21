@@ -32,20 +32,6 @@ def ensure_database():
         conn.close()
 
 
-def drop_test_database():
-    """Drop the configured database. Refuses unless its name ends in _test."""
-    target = dsn()["dbname"]
-    if not target.endswith("_test"):
-        raise RuntimeError(f"Refusing to drop {target!r}: only *_test databases may be dropped.")
-    conn = psycopg2.connect(**dsn("postgres"))
-    conn.autocommit = True
-    try:
-        with conn.cursor() as cur:
-            cur.execute(sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(sql.Identifier(target)))
-    finally:
-        conn.close()
-
-
 def _files(kind):
     folder = os.path.join(HERE, kind)
     return sorted(f for f in os.listdir(folder) if f.endswith(".sql"))

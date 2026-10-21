@@ -41,7 +41,9 @@ How they fit: caveman sets how chat words look, output-token-optimization sets w
 
 - `ipay-ingenious`: AWS EC2 (Debian 13, x86_64, 2 vCPU, 2 GB), reached over Tailscale at `100.99.145.7` as `admin` with key `~/.ssh/ipay.pem` (SSH alias `ipay-ingenious`). Never use the public IP.
 - Code in `/opt/ipay/src`. Secrets in `/opt/ipay/.env`, created on the server; never copy them off it or into chat.
-- Stack: `docker-compose.prod.yml`, compose project `ipay`. etcd plus PostgreSQL 16 under Patroni (`deploy/patroni/`), and the app on Apache + mod_wsgi, bound to 127.0.0.1:8080. Served to the tailnet over HTTPS by `tailscale serve`. A Caddy proxy for a public domain is ready under the `public` compose profile.
+- Stack: `docker-compose.prod.yml`, compose project `ipay`. etcd plus PostgreSQL 16 under Patroni (`deploy/patroni/`), and the app on Apache + mod_wsgi, bound to 127.0.0.1:8080.
+- Public: https://ipay.ddns.net (No-IP DNS → Elastic IP 15.134.221.45). Caddy (`public` profile, set by `COMPOSE_PROFILES=public` in the server `.env`) binds the private address `PUBLIC_BIND_IP=172.31.23.244`, gets the certificate automatically, and proxies to the app.
+- Tailnet: https://ipay-ingenious.tail46f212.ts.net, via `tailscale serve` on 100.99.145.7:443.
 
 ## Legacy source
 

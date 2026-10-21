@@ -56,10 +56,12 @@ services:
     image: caddy:2-alpine
     profiles: ["public"]
     restart: unless-stopped
+    # Bind to the server's private address (PUBLIC_BIND_IP), where public traffic arrives:
+    # `tailscale serve` already holds 443 on the tailnet address, so 0.0.0.0 would clash.
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "${PUBLIC_BIND_IP:-0.0.0.0}:80:80"
+      - "${PUBLIC_BIND_IP:-0.0.0.0}:443:443"
+      - "${PUBLIC_BIND_IP:-0.0.0.0}:443:443/udp"
     environment:
       IPAY_DOMAIN: ${IPAY_DOMAIN:-}
       ACME_EMAIL: ${ACME_EMAIL:-it@ingenious.sg}

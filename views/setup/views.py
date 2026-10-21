@@ -33,10 +33,10 @@ def setup():
     errors = account_errors(f.get("display_name"), f.get("email"), f.get("password"), f.get("confirm"))
     if errors:
         return jsonify(problem("Check the highlighted fields", "Your account was not created.", errors)), 422
-    user = create_user(f["display_name"], f["email"], f["password"], is_owner=True)
+    user = create_user(f["display_name"], f["email"], f["password"], is_owner=True)  # the owner is platform admin
     session.clear()
     session["user_id"] = user["id"]
-    flash("Owner account created. Now add your first company.")
+    flash("Owner account created. Now add your first customer.")
     resp = make_response("", 200)
-    resp.headers["HX-Location"] = "/companies"
+    resp.headers["HX-Location"] = "/admin"
     return resp

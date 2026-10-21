@@ -29,14 +29,18 @@ def login():
         record_failure(email, request.remote_addr)
         return jsonify(problem("Sign-in failed", "The email or password is incorrect.",
                                {"password": "Check your email and password, then try again."})), 422
+    if not is_enabled(user):
+        return jsonify(problem("Account disabled", "This account or its customer is disabled. Contact your administrator.")), 403
     clear_failures(email)
     session.clear()  # a fresh session on sign-in: no fixation
     session["user_id"] = user["id"]
-    mine = companies_for(user["id"])
+    mine = companies_for(user)
     if len(mine) == 1:
         session["company_id"] = mine[0]["id"]
     flash(f"Welcome back, {user['display_name']}.")
-    return go("/dashboard" if session.get("company_id") else "/companies")
+    if session.get("company_id"):
+        return go("/dashboard")
+    return go("/admin" if user["is_platform_admin"] else "/companies")
 
 
 @login_main.route("/login/logout", methods=["POST"])

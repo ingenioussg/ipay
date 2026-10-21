@@ -1,29 +1,10 @@
 {% extends "companies_base.html" %}
 {% from "icons.html" import icon %}
+{% from "forms.html" import country_toggles %}
 
 {% block title %}
     Companies · iPay
 {% endblock title %}
-
-{% macro country_toggles(sg=false, my=false) -%}
-<div class="field">
-    <span class="label">Payroll countries</span>
-    <input type="hidden" name="countries">
-    <div class="grid" style="--min:200px; gap:12px">
-        <label class="toggle-card">
-            <span class="body"><span class="title"><span class="flag flag-sg">SG</span> Singapore payroll</span>
-                <span class="desc">CPF, SDL, SHG funds, IR8A</span></span>
-            <span class="switch"><input type="checkbox" name="sg_payroll" {{ 'checked' if sg }}><span class="track"></span><span class="thumb"></span></span>
-        </label>
-        <label class="toggle-card">
-            <span class="body"><span class="title"><span class="flag flag-my">MY</span> Malaysian payroll</span>
-                <span class="desc">EPF, SOCSO, EIS, PCB, EA form</span></span>
-            <span class="switch"><input type="checkbox" name="my_payroll" {{ 'checked' if my }}><span class="track"></span><span class="thumb"></span></span>
-        </label>
-    </div>
-    <span class="hint">Turn on one or both. You can change this later in Settings.</span>
-</div>
-{%- endmacro %}
 
 {% block body %}
 <div class="page-header">
@@ -31,7 +12,9 @@
         <h1>Companies</h1>
         <p>Each company keeps its own employees, payroll and settings.</p>
     </div>
+    {% if can("companies.manage") %}
     <button class="btn btn-primary" type="button" data-action="open-modal" data-target="new-company">{{ icon("plus") }} New company</button>
+    {% endif %}
 </div>
 
 {% if companies %}
@@ -42,7 +25,8 @@
         <button class="card card-body card-link" type="submit" style="width:100%;text-align:left;font:inherit;color:inherit;display:grid;gap:14px">
             <span class="spread">
                 <span class="row"><span class="user-avatar" style="border-radius:10px;width:40px;height:40px">{{ c.name[:1] | upper }}</span>
-                    <strong style="font-size:16px">{{ c.name }}</strong></span>
+                    <span style="display:grid"><strong style="font-size:16px">{{ c.name }}</strong>
+                    {% if is_platform_admin %}<span class="faint" style="font-size:13px">{{ c.customer_name }}</span>{% endif %}</span></span>
                 {% if company and company.id == c.id %}<span class="badge badge-success"><span class="dot"></span> Open</span>{% endif %}
             </span>
             <span class="row">
@@ -59,24 +43,42 @@
     <div class="empty">
         <div class="art">{{ icon("building") }}</div>
         <h3>No companies yet</h3>
+        {% if can("companies.manage") %}
         <p>Add the first company to start running payroll.</p>
         <button class="btn btn-primary" type="button" data-action="open-modal" data-target="new-company">{{ icon("plus") }} New company</button>
+        {% else %}
+        <p>Ask your administrator for access to a company.</p>
+        {% endif %}
     </div>
 </div>
 {% endif %}
 
-<dialog class="modal" id="new-company" aria-labelledby="new-company-title" style="width:min(560px, calc(100vw - 32px))">
+{% if can("companies.manage") %}
+<dialog class="modal" id="new-company" style="width:min(600px, calc(100vw - 32px))">
     <form hx-post="/companies" hx-swap="none" novalidate>
         <div class="modal-form-body">
             <div>
-                <div class="modal-title" id="new-company-title">New company</div>
+                <div class="modal-title">New company</div>
                 <p class="modal-message">Its payroll data lives in its own space, separate from other companies.</p>
             </div>
+            {% if is_platform_admin %}
+            <div class="field">
+                <label for="new-customer-id">Customer</label>
+                <select class="input" id="new-customer-id" name="customer_id">
+                    <option value="">Choose a customer</option>
+                    {% for k in customer_list %}<option value="{{ k.id }}">{{ k.name }} ({{ "SG" if k.sg_payroll }}{{ " + " if k.sg_payroll and k.my_payroll }}{{ "MY" if k.my_payroll }})</option>{% endfor %}
+                </select>
+            </div>
+            {% endif %}
             <div class="field">
                 <label for="new-name">Company name</label>
-                <input class="input" id="new-name" name="name" placeholder="e.g. Ingenious Business Software Pte Ltd">
+                <input class="input" id="new-name" name="name" placeholder="e.g. Acme Pte Ltd">
             </div>
-            {{ country_toggles(sg=true) }}
+            {% if is_platform_admin %}
+            {{ country_toggles(true, false) }}
+            {% else %}
+            {{ country_toggles(customer.sg_payroll, not customer.sg_payroll and customer.my_payroll, customer.sg_payroll, customer.my_payroll) }}
+            {% endif %}
         </div>
         <div class="modal-actions">
             <button class="btn" type="button" data-action="close-modal">Cancel</button>
@@ -84,4 +86,5 @@
         </div>
     </form>
 </dialog>
+{% endif %}
 {% endblock body %}

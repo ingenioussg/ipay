@@ -1,5 +1,6 @@
 {% extends "settings_base.html" %}
 {% from "icons.html" import icon %}
+{% from "forms.html" import country_toggles %}
 
 {% block title %}
     Settings · iPay
@@ -38,20 +39,8 @@
 
     <section class="card">
         <div class="card-header"><div><h3>Payroll countries</h3><p>Run Singapore payroll, Malaysian payroll, or both for this company.</p></div></div>
-        <div class="card-body field">
-            <input type="hidden" name="countries">
-            <div class="grid" style="--min:260px; gap:12px">
-                <label class="toggle-card">
-                    <span class="body"><span class="title"><span class="flag flag-sg">SG</span> Singapore payroll</span>
-                        <span class="desc">CPF, SDL, SHG funds, FWL · IR8A, IR8S, Appendix 8A · CPF and bank files</span></span>
-                    <span class="switch"><input type="checkbox" id="sg_payroll" name="sg_payroll" {{ 'checked' if company.sg_payroll }}><span class="track"></span><span class="thumb"></span></span>
-                </label>
-                <label class="toggle-card">
-                    <span class="body"><span class="title"><span class="flag flag-my">MY</span> Malaysian payroll</span>
-                        <span class="desc">EPF, SOCSO, EIS, PCB/MTD, HRD Corp · EA form, Borang E</span></span>
-                    <span class="switch"><input type="checkbox" id="my_payroll" name="my_payroll" {{ 'checked' if company.my_payroll }}><span class="track"></span><span class="thumb"></span></span>
-                </label>
-            </div>
+        <div class="card-body">
+            {{ country_toggles(company.sg_payroll, company.my_payroll, customer.sg_payroll, customer.my_payroll, ids=true, min=260) }}
         </div>
     </section>
 

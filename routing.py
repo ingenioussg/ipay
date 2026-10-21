@@ -6,9 +6,11 @@ from libraries.libraries import *
 
 from views.login.views import login_main
 from views.setup.views import setup_main
+from views.admin.views import admin_main
 from views.dashboard.views import dashboard_main
 from views.companies.views import companies_main
 from views.settings.views import settings_main
+from views.users.views import users_main
 from controllers.head.controllers import head_main
 from controllers.feedback.controllers import feedback_main
 from controllers.preloginnavbar.controllers import preloginnavbar_main
@@ -37,7 +39,26 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 app.config['SESSION_COOKIE_SECURE'] = os.getenv("SESSION_COOKIE_SECURE", "0") == "1"
 
-PUBLIC = ("/login", "/setup", "/static/")
+# ---------------------------------------------------------------------------
+# Access map: endpoint -> {method: what it needs}. Checked on every request.
+#   None        signed in (and enabled)
+#   "platform"  platform admin only
+#   "<code>"    a permission from modules/platform/access.py
+# An endpoint or method missing from this map is refused: new routes must be declared.
+# ---------------------------------------------------------------------------
+PUBLIC = {"static", "index", "login_main.login", "setup_main.setup"}
+ACCESS = {
+    "login_main.logout": {"POST": None},
+    "dashboard_main.dashboard": {"GET": None},
+    "companies_main.companies": {"GET": None, "POST": "companies.manage"},
+    "companies_main.switch": {"POST": None},
+    "settings_main.settings": {"GET": "settings.manage", "POST": "settings.manage"},
+    "users_main.users": {"GET": "users.manage", "POST": "users.manage"},
+    "users_main.update": {"POST": "users.manage"},
+    "users_main.roles": {"POST": "users.manage"},
+    "admin_main.admin": {"GET": "platform", "POST": "platform"},
+    "admin_main.customer": {"POST": "platform"},
+}
 
 
 def _asset_version():
@@ -57,31 +78,66 @@ def _asset_version():
 def inject_globals():
     if app.debug or not hasattr(app, "_asset_v"):
         app._asset_v = _asset_version()
-    return {"v": app._asset_v, "csrf_token": lambda: csrf_token(session),
-            "user": g.get("user"), "company": g.get("company"), "demo": DEMO}
+    user = g.get("user")
+    return {"v": app._asset_v, "csrf_token": lambda: csrf_token(session), "demo": DEMO,
+            "user": user, "company": g.get("company"), "customer": g.get("customer"),
+            "can": lambda permission: can(user, permission), "is_platform_admin": is_platform_admin(user)}
+
+
+def deny(title="Not allowed", message="Your role does not allow this. Ask your administrator.", status=403):
+    if request.headers.get("HX-Request"):
+        return jsonify(problem(title, message)), status
+    return render_template("error.html", code=status, title=title, message=message), status
+
+
+def _customer_of(user, company):
+    """The customer in context: the user's own, or (for a platform admin) the open company's."""
+    if user and not user["is_platform_admin"]:
+        return {"id": user["customer_id"], "name": user["customer_name"],
+                "sg_payroll": user["customer_sg"], "my_payroll": user["customer_my"]}
+    if company:
+        return {"id": company["customer_id"], "name": company["customer_name"],
+                "sg_payroll": company["customer_sg"], "my_payroll": company["customer_my"]}
+    return None
 
 
 @app.before_request
-def require_sign_in():
-    """Every page except sign-in, first-run setup and static files needs a signed-in user.
-    Every change (POST) must carry this session's CSRF token, checked here so no view can forget."""
-    if request.path.startswith("/static/"):
+def guard():
+    """Sign-in, CSRF and access rights for every request, so no view can forget them."""
+    if request.endpoint == "static":
         return None
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
         sent = request.headers.get("X-CSRF-Token") or request.form.get("csrf")
         if not csrf_valid(session, sent):
             return jsonify(problem("Page expired", "Reload the page and try again.")), 403
-    g.user = get_user(session["user_id"]) if session.get("user_id") else None
-    g.company = company_for(g.user["id"], session.get("company_id")) if g.user else None
-    if request.path.startswith(PUBLIC) or request.path == "/":
+
+    user = get_user(session["user_id"]) if session.get("user_id") else None
+    if user and not is_enabled(user):
+        user = None
+    g.user = user
+    g.company = company_for(user, session.get("company_id")) if user else None
+    g.customer = _customer_of(user, g.company)
+
+    if request.endpoint in PUBLIC:
         return None
-    if not g.user:
+    if request.endpoint is None:
+        return None  # unknown URL: let the 404 handler answer
+    if not user:
         # Drop only the sign-in keys: clearing the whole session would also drop the CSRF token.
         session.pop("user_id", None)
         session.pop("company_id", None)
         if request.headers.get("HX-Request"):
             return jsonify(problem("Signed out", "Your session has ended. Sign in again.")), 401
         return redirect(url_for("login_main.login"))
+
+    rule = ACCESS.get(request.endpoint, {})
+    if request.method not in rule:
+        return deny()
+    need = rule[request.method]
+    if need == "platform" and not is_platform_admin(user):
+        return deny()
+    if need not in (None, "platform") and not can(user, need):
+        return deny()
     return None
 
 
@@ -89,7 +145,11 @@ def require_sign_in():
 def index():
     if user_count() == 0:
         return redirect(url_for("setup_main.setup"))
-    return redirect(url_for("dashboard_main.dashboard" if g.user else "login_main.login"))
+    if not g.user:
+        return redirect(url_for("login_main.login"))
+    if is_platform_admin(g.user) and not g.company:
+        return redirect(url_for("admin_main.admin"))
+    return redirect(url_for("dashboard_main.dashboard"))
 
 
 @app.after_request
@@ -124,9 +184,11 @@ def server_error(_e):
 
 app.register_blueprint(login_main, url_prefix="/")
 app.register_blueprint(setup_main, url_prefix="/")
+app.register_blueprint(admin_main, url_prefix="/")
 app.register_blueprint(dashboard_main, url_prefix="/")
 app.register_blueprint(companies_main, url_prefix="/")
 app.register_blueprint(settings_main, url_prefix="/")
+app.register_blueprint(users_main, url_prefix="/")
 app.register_blueprint(head_main, url_prefix="/")
 app.register_blueprint(feedback_main, url_prefix="/")
 app.register_blueprint(preloginnavbar_main, url_prefix="/")

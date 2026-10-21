@@ -1,0 +1,136 @@
+{% extends "users_base.html" %}
+{% from "icons.html" import icon %}
+{% from "forms.html" import switch, company_access, permission_grid %}
+
+{% block title %}
+    Users and roles · iPay
+{% endblock title %}
+
+{% macro role_options(selected=none) -%}
+{% for r in roles %}<option value="{{ r.id }}"{{ ' selected' if r.id == selected }}>{{ r.name }}</option>{% endfor %}
+{%- endmacro %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1>Users and roles</h1>
+        <p>People at {{ customer.name }} and what each of them may do.</p>
+    </div>
+    <div class="row">
+        <button class="btn" type="button" data-action="open-modal" data-target="new-role">{{ icon("shield") }} New role</button>
+        <button class="btn btn-primary" type="button" data-action="open-modal" data-target="new-user">{{ icon("plus") }} New user</button>
+    </div>
+</div>
+
+<div class="stack">
+    <section class="card">
+        <div class="card-header"><div><h3>Users</h3><p>{{ people | length }} {{ 'person' if people | length == 1 else 'people' }}</p></div></div>
+        <div class="table-wrap" style="border:0;border-radius:0 0 var(--r-lg) var(--r-lg)">
+            <table class="table">
+                <thead><tr><th>Person</th><th>Role</th><th>Companies</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                {% for u in people %}
+                <tr>
+                    <td><div class="row" style="gap:10px;flex-wrap:nowrap"><span class="user-avatar" aria-hidden="true">{{ u.display_name[:1] | upper }}</span>
+                        <div><strong>{{ u.display_name }}</strong>{% if u.id == user.id %} <span class="faint">(you)</span>{% endif %}<div class="faint" style="font-size:13px">{{ u.email }}</div></div></div></td>
+                    <td><span class="badge {{ 'badge-accent' if u.role_is_admin }}">{{ u.role_name }}</span></td>
+                    <td>{% if u.all_companies %}All{% else %}{{ company_list | selectattr("id", "in", u.company_ids) | map(attribute="name") | join(", ") }}{% endif %}</td>
+                    <td>{% if u.is_active %}<span class="badge badge-success"><span class="dot"></span> Active</span>{% else %}<span class="badge badge-danger"><span class="dot"></span> Disabled</span>{% endif %}</td>
+                    <td style="text-align:right"><button class="btn btn-sm" type="button" data-action="open-modal" data-target="edit-user-{{ u.id }}">Edit</button></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <div class="spread" style="margin-bottom:12px"><h3>Roles</h3></div>
+        <div class="grid" style="--min:260px">
+            {% for r in roles %}
+            <div class="card card-body" style="display:grid;gap:10px">
+                <div class="spread"><strong>{{ r.name }}</strong>
+                    {% if r.is_admin %}<span class="badge badge-accent">Everything</span>{% else %}<button class="btn btn-sm" type="button" data-action="open-modal" data-target="edit-role-{{ r.id }}">Edit</button>{% endif %}</div>
+                <div class="faint" style="font-size:13px">{% if r.is_admin %}All access rights, always. Cannot be changed.{% else %}{% for p in r.permissions %}{{ labels[p] }}{{ " · " if not loop.last }}{% endfor %}{% endif %}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<dialog class="modal" id="new-user" style="width:min(600px, calc(100vw - 32px))">
+    <form hx-post="/users" hx-swap="none" novalidate>
+        <div class="modal-form-body">
+            <div><div class="modal-title">New user</div><p class="modal-message">They sign in with this temporary password.</p></div>
+            <div class="form-grid">
+                <div class="field"><label for="nu-name">Name</label><input class="input" id="nu-name" name="display_name" autocomplete="off"></div>
+                <div class="field"><label for="nu-email">Email</label><input class="input" id="nu-email" name="email" type="email" autocomplete="off"></div>
+            </div>
+            <div class="form-grid">
+                <div class="field"><label for="nu-pass">Temporary password</label><input class="input" id="nu-pass" name="password" type="text" autocomplete="off" spellcheck="false"><span class="hint">At least 10 characters.</span></div>
+                <div class="field"><label for="nu-role">Role</label><select class="input" id="nu-role" name="role_id"><option value="">Choose a role</option>{{ role_options() }}</select></div>
+            </div>
+            {{ company_access(company_list) }}
+        </div>
+        <div class="modal-actions">
+            <button class="btn" type="button" data-action="close-modal">Cancel</button>
+            <button class="btn btn-primary" type="submit"><span class="spinner"></span> Add user</button>
+        </div>
+    </form>
+</dialog>
+
+{% for u in people %}
+<dialog class="modal" id="edit-user-{{ u.id }}" style="width:min(600px, calc(100vw - 32px))">
+    <form hx-post="/users/update" hx-swap="none" novalidate>
+        <input type="hidden" name="user_id" value="{{ u.id }}">
+        <div class="modal-form-body">
+            <div><div class="modal-title">Edit {{ u.display_name }}</div><p class="modal-message">{{ u.email }}</p></div>
+            <div class="form-grid">
+                <div class="field"><label for="eu-name-{{ u.id }}">Name</label><input class="input" id="eu-name-{{ u.id }}" name="display_name" value="{{ u.display_name }}"></div>
+                <div class="field"><label for="eu-role-{{ u.id }}">Role</label><select class="input" id="eu-role-{{ u.id }}" name="role_id">{{ role_options(u.role_id) }}</select></div>
+            </div>
+            <label class="toggle-card">
+                <span class="body"><span class="title">Active</span><span class="desc">Disabled users cannot sign in.</span></span>
+                {{ switch("is_active", u.is_active) }}
+            </label>
+            {{ company_access(company_list, u.all_companies, u.company_ids, uid=u.id) }}
+        </div>
+        <div class="modal-actions">
+            <button class="btn" type="button" data-action="close-modal">Cancel</button>
+            <button class="btn btn-primary" type="submit"><span class="spinner"></span> Save user</button>
+        </div>
+    </form>
+</dialog>
+{% endfor %}
+
+<dialog class="modal" id="new-role" style="width:min(720px, calc(100vw - 32px))">
+    <form hx-post="/users/roles" hx-swap="none" novalidate>
+        <div class="modal-form-body">
+            <div><div class="modal-title">New role</div><p class="modal-message">Pick exactly what people with this role may do.</p></div>
+            <div class="field"><label for="nr-name">Role name</label><input class="input" id="nr-name" name="name" placeholder="e.g. Branch payroll clerk"></div>
+            {{ permission_grid(areas) }}
+        </div>
+        <div class="modal-actions">
+            <button class="btn" type="button" data-action="close-modal">Cancel</button>
+            <button class="btn btn-primary" type="submit"><span class="spinner"></span> Create role</button>
+        </div>
+    </form>
+</dialog>
+
+{% for r in roles if not r.is_admin %}
+<dialog class="modal" id="edit-role-{{ r.id }}" style="width:min(720px, calc(100vw - 32px))">
+    <form hx-post="/users/roles" hx-swap="none" novalidate>
+        <input type="hidden" name="role_id" value="{{ r.id }}">
+        <div class="modal-form-body">
+            <div class="modal-title">Edit role</div>
+            <div class="field"><label for="er-name-{{ r.id }}">Role name</label><input class="input" id="er-name-{{ r.id }}" name="name" value="{{ r.name }}"></div>
+            {{ permission_grid(areas, r.permissions) }}
+        </div>
+        <div class="modal-actions">
+            <button class="btn" type="button" data-action="close-modal">Cancel</button>
+            <button class="btn btn-primary" type="submit"><span class="spinner"></span> Save role</button>
+        </div>
+    </form>
+</dialog>
+{% endfor %}
+{% endblock body %}

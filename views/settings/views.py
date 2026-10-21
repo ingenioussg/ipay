@@ -20,7 +20,8 @@ def settings():
     values = {k: clean(f.get(k)).upper() for k in (*SG_FIELDS, *MY_FIELDS)}
     # Only the countries turned on are checked; a hidden section's values are kept as they are.
     checked = {k: v for k, v in values.items() if (sg and k in SG_FIELDS) or (my and k in MY_FIELDS)}
-    errors = {**company_name_errors(name), **country_errors(sg, my), **identifier_errors(checked)}
+    errors = {**company_name_errors(name), **country_errors(sg, my), **identifier_errors(checked),
+              **entitlement_errors(g.customer["sg_payroll"], g.customer["my_payroll"], sg, my)}
     if errors:
         return jsonify(problem("Settings not saved", "Fix the highlighted fields. Nothing was changed.", errors)), 422
     update_company(g.company["id"], name, sg, my)

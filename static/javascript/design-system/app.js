@@ -151,8 +151,10 @@
 
   /* ---------- page behaviours ---------- */
   function syncReveals(root = document) {
-    root.querySelectorAll("[data-reveal]").forEach((sec) => {
-      const on = !!document.getElementById(sec.dataset.reveal)?.checked;
+    // data-reveal="id": open while that checkbox is on; data-reveal-off="id": open while it is off.
+    root.querySelectorAll("[data-reveal], [data-reveal-off]").forEach((sec) => {
+      const checked = !!document.getElementById(sec.dataset.reveal || sec.dataset.revealOff)?.checked;
+      const on = sec.dataset.reveal ? checked : !checked;
       sec.classList.toggle("is-open", on);
       sec.inert = !on;
     });

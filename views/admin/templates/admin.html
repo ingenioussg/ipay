@@ -1,0 +1,89 @@
+{% extends "admin_base.html" %}
+{% from "icons.html" import icon %}
+{% from "forms.html" import country_toggles, switch %}
+
+{% block title %}
+    Customers · iPay
+{% endblock title %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <span class="badge badge-accent">{{ icon("shield") }} Platform admin</span>
+        <h1 style="margin-top:10px">Customers</h1>
+        <p>Each customer has its own companies, users and payroll countries.</p>
+    </div>
+    <button class="btn btn-primary" type="button" data-action="open-modal" data-target="new-customer">{{ icon("plus") }} New customer</button>
+</div>
+
+{% if customer_list %}
+<div class="table-wrap">
+    <table class="table">
+        <thead><tr><th>Customer</th><th>Payroll</th><th class="num">Companies</th><th class="num">Users</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for c in customer_list %}
+            <tr>
+                <td><strong>{{ c.name }}</strong></td>
+                <td><span class="row" style="gap:6px">{% if c.sg_payroll %}<span class="flag flag-sg">SG</span>{% endif %}{% if c.my_payroll %}<span class="flag flag-my">MY</span>{% endif %}</span></td>
+                <td class="num">{{ c.companies }}</td>
+                <td class="num">{{ c.users }}</td>
+                <td>{% if c.is_active %}<span class="badge badge-success"><span class="dot"></span> Active</span>{% else %}<span class="badge badge-danger"><span class="dot"></span> Suspended</span>{% endif %}</td>
+                <td style="text-align:right"><button class="btn btn-sm" type="button" data-action="open-modal" data-target="edit-customer-{{ c.id }}">Edit</button></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% for c in customer_list %}
+<dialog class="modal" id="edit-customer-{{ c.id }}" style="width:min(600px, calc(100vw - 32px))">
+    <form hx-post="/admin/customer" hx-swap="none" novalidate>
+        <input type="hidden" name="customer_id" value="{{ c.id }}">
+        <div class="modal-form-body">
+            <div class="modal-title">Edit {{ c.name }}</div>
+            <div class="field"><label for="cn-{{ c.id }}">Customer name</label><input class="input" id="cn-{{ c.id }}" name="name" value="{{ c.name }}"></div>
+            {{ country_toggles(c.sg_payroll, c.my_payroll) }}
+            <label class="toggle-card">
+                <span class="body"><span class="title">Active</span><span class="desc">Suspended customers' users cannot sign in.</span></span>
+                {{ switch("is_active", c.is_active) }}
+            </label>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" type="button" data-action="close-modal">Cancel</button>
+            <button class="btn btn-primary" type="submit"><span class="spinner"></span> Save customer</button>
+        </div>
+    </form>
+</dialog>
+{% endfor %}
+{% else %}
+<div class="card">
+    <div class="empty">
+        <div class="art">{{ icon("building") }}</div>
+        <h3>No customers yet</h3>
+        <p>Add a customer, choose its payroll countries, and create its first admin.</p>
+        <button class="btn btn-primary" type="button" data-action="open-modal" data-target="new-customer">{{ icon("plus") }} New customer</button>
+    </div>
+</div>
+{% endif %}
+
+<dialog class="modal" id="new-customer" style="width:min(640px, calc(100vw - 32px))">
+    <form hx-post="/admin" hx-swap="none" novalidate>
+        <div class="modal-form-body">
+            <div>
+                <div class="modal-title">New customer</div>
+                <p class="modal-message">The customer's admin signs in with the temporary password and manages their own users.</p>
+            </div>
+            <div class="field"><label for="new-cname">Customer name</label><input class="input" id="new-cname" name="name" placeholder="e.g. Acme Group"></div>
+            {{ country_toggles(true, false) }}
+            <div class="form-grid">
+                <div class="field"><label for="new-aname">Admin's name</label><input class="input" id="new-aname" name="admin_display_name" autocomplete="off"></div>
+                <div class="field"><label for="new-aemail">Admin's email</label><input class="input" id="new-aemail" name="admin_email" type="email" autocomplete="off"></div>
+            </div>
+            <div class="field"><label for="new-apass">Temporary password</label><input class="input" id="new-apass" name="admin_password" type="text" autocomplete="off" spellcheck="false"><span class="hint">At least 10 characters. Send it to the admin directly.</span></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" type="button" data-action="close-modal">Cancel</button>
+            <button class="btn btn-primary" type="submit"><span class="spinner"></span> Create customer</button>
+        </div>
+    </form>
+</dialog>
+{% endblock body %}

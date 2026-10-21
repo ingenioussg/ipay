@@ -14,8 +14,13 @@
         {{ nav_link("/statutory", "landmark", "Statutory", true) }}
         {{ nav_link("/reports", "file", "Reports", true) }}
         <div class="nav-label">Company</div>
-        {{ nav_link("/settings", "settings", "Settings") }}
+        {% if can("settings.manage") %}{{ nav_link("/settings", "settings", "Settings") }}{% endif %}
+        {% if can("users.manage") %}{{ nav_link("/users", "user", "Users and roles") }}{% endif %}
         {{ nav_link("/companies", "building", "Companies") }}
+        {% if is_platform_admin %}
+        <div class="nav-label">Platform</div>
+        {{ nav_link("/admin", "shield", "Customers") }}
+        {% endif %}
     </nav>
     <div class="sidebar-foot">
         {% if company %}

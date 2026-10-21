@@ -194,6 +194,21 @@ svg.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: no
 .toggle-card .title { font-weight: 600; display: flex; align-items: center; gap: var(--s-2); }
 .toggle-card .desc { font-size: var(--t-sm); color: var(--text-2); }
 
+.toggle-card.is-locked { opacity: 0.55; cursor: not-allowed; }
+.toggle-card.is-locked .switch input { cursor: not-allowed; }
+
+/* checkboxes, permission grid, selects */
+.check { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: var(--r-sm); font-size: var(--t-md); cursor: pointer; transition: background var(--d-fast); }
+.check:hover { background: var(--surface-2); }
+.check input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); flex: none; }
+.check-list { display: grid; gap: 2px; padding: 6px 0 0 18px; }
+.perm-grid { display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.perm-area { margin: 0; padding: var(--s-3); border: 1px solid var(--border); border-radius: var(--r-md); display: grid; gap: 2px; }
+.perm-area legend { padding: 0 6px; font-size: var(--t-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); }
+select.input { appearance: none; padding-right: 36px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-3) 50%), linear-gradient(135deg, var(--text-3) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 52%, calc(100% - 13px) 52%; background-size: 5px 5px; background-repeat: no-repeat; }
+
 /* collapsible section driven by a toggle (grid 0fr -> 1fr animates height) */
 .reveal { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows var(--d-slow) var(--ease-out), opacity var(--d-med); }
 .reveal > .reveal-inner { overflow: hidden; min-height: 0; }

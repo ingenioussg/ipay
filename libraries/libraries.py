@@ -9,10 +9,17 @@ from flask import Flask, render_template, url_for, Blueprint, redirect, request,
 from modules.security.csrf import csrf_token, csrf_valid
 from modules.web.feedback import problem, toast_header
 from modules.settings.validation import (
-    clean, company_name_errors, country_errors, identifier_errors, account_errors, SG_FIELDS, MY_FIELDS,
+    clean, company_name_errors, country_errors, identifier_errors, account_errors, entitlement_errors,
+    text_errors, new_user_errors, SG_FIELDS, MY_FIELDS,
 )
 from modules.settings import registry
+from modules.platform.access import PERMISSIONS, areas, can, is_platform_admin
 from modules.platform.users import (
-    user_count, create_user, authenticate, get_user, too_many_failures, record_failure, clear_failures,
+    user_count, create_user, authenticate, get_user, is_enabled, users_of, update_user, email_taken,
+    too_many_failures, record_failure, clear_failures,
 )
-from modules.platform.companies import companies_for, company_for, create_company, update_company
+from modules.platform.companies import companies_for, company_for, companies_of, create_company, update_company
+from modules.platform.customers import (
+    customers, get_customer, create_customer, update_customer, countries_in_use, roles_of, role_of,
+    role_name_taken, save_role,
+)

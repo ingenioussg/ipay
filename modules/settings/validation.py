@@ -57,6 +57,32 @@ def identifier_errors(values: dict) -> dict:
     return errors
 
 
+def entitlement_errors(allowed_sg: bool, allowed_my: bool, sg: bool, my: bool) -> dict:
+    """A company may only run the payroll countries enabled for its customer."""
+    if (sg and not allowed_sg) or (my and not allowed_my):
+        off = [n for on, ok, n in ((sg, allowed_sg, "Singapore"), (my, allowed_my, "Malaysian")) if on and not ok]
+        return {"countries": f"{' and '.join(off)} payroll is not enabled for this customer. Ask your iPay administrator."}
+    return {}
+
+
+def text_errors(value: str, field: str, label: str, lo: int = 2, hi: int = 120) -> dict:
+    if not lo <= len(clean(value)) <= hi:
+        return {field: f"{label} must be {lo} to {hi} characters."}
+    return {}
+
+
+def new_user_errors(display_name: str, email: str, password: str, prefix: str = "") -> dict:
+    """A user created by an administrator: a temporary password, no confirmation field."""
+    errors = {}
+    if not 1 <= len(clean(display_name)) <= 80:
+        errors[prefix + "display_name"] = "Enter the person's name (up to 80 characters)."
+    if not EMAIL_RE.match(clean(email)):
+        errors[prefix + "email"] = "Enter a valid email address."
+    if len(password or "") < 10:
+        errors[prefix + "password"] = "Use a temporary password of at least 10 characters."
+    return errors
+
+
 def account_errors(display_name: str, email: str, password: str, confirm: str) -> dict:
     errors = {}
     if not 1 <= len(clean(display_name)) <= 80:

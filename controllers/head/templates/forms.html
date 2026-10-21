@@ -1,0 +1,56 @@
+{# Shared form pieces. Usage: {% from "forms.html" import country_toggles, switch, company_access, permission_grid %} #}
+
+{% macro switch(name, checked=false, id=none, disabled=false) -%}
+<span class="switch"><input type="checkbox" name="{{ name }}"{% if id %} id="{{ id }}"{% endif %}{{ ' checked' if checked }}{{ ' disabled' if disabled }}><span class="track"></span><span class="thumb"></span></span>
+{%- endmacro %}
+
+{% macro country_toggles(sg=false, my=false, allow_sg=true, allow_my=true, ids=false, min=220) -%}
+<div class="field">
+    <span class="label">Payroll countries</span>
+    <input type="hidden" name="countries">
+    <div class="grid" style="--min:{{ min }}px; gap:12px">
+        <label class="toggle-card{{ ' is-locked' if not allow_sg }}">
+            <span class="body"><span class="title"><span class="flag flag-sg">SG</span> Singapore payroll</span>
+                <span class="desc">{{ 'CPF, SDL, SHG funds, FWL · IR8A, IR8S, Appendix 8A' if allow_sg else 'Not enabled for this customer' }}</span></span>
+            {{ switch("sg_payroll", sg and allow_sg, "sg_payroll" if ids else none, not allow_sg) }}
+        </label>
+        <label class="toggle-card{{ ' is-locked' if not allow_my }}">
+            <span class="body"><span class="title"><span class="flag flag-my">MY</span> Malaysian payroll</span>
+                <span class="desc">{{ 'EPF, SOCSO, EIS, PCB/MTD, HRD Corp · EA form, Borang E' if allow_my else 'Not enabled for this customer' }}</span></span>
+            {{ switch("my_payroll", my and allow_my, "my_payroll" if ids else none, not allow_my) }}
+        </label>
+    </div>
+</div>
+{%- endmacro %}
+
+{% macro company_access(company_list, all_companies=true, picked=[], uid="new") -%}
+<div class="field">
+    <span class="label">Companies this person can open</span>
+    <label class="check"><input type="checkbox" name="all_companies" id="all-{{ uid }}"{{ ' checked' if all_companies }}> All companies, including ones added later</label>
+    <div class="reveal" data-reveal-off="all-{{ uid }}"><div class="reveal-inner">
+        <div class="check-list">
+            {% for c in company_list %}
+            <label class="check"><input type="checkbox" name="company_ids" value="{{ c.id }}"{{ ' checked' if c.id in picked }}> {{ c.name }}</label>
+            {% else %}
+            <span class="hint">No companies yet.</span>
+            {% endfor %}
+        </div>
+    </div></div>
+</div>
+{%- endmacro %}
+
+{% macro permission_grid(areas, selected=[], locked=false) -%}
+<div class="field">
+    <span class="label">Access rights</span>
+    <div class="perm-grid">
+        {% for area, items in areas.items() %}
+        <fieldset class="perm-area">
+            <legend>{{ area }}</legend>
+            {% for code, label in items %}
+            <label class="check"><input type="checkbox" name="permissions" value="{{ code }}"{{ ' checked' if locked or code in selected }}{{ ' disabled' if locked }}> {{ label }}</label>
+            {% endfor %}
+        </fieldset>
+        {% endfor %}
+    </div>
+</div>
+{%- endmacro %}

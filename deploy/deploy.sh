@@ -20,5 +20,5 @@ git -c core.autocrlf=false archive --format=tar HEAD | ssh "$HOST" "set -e
     echo $REV | sudo tee /opt/ipay/src.new/REVISION >/dev/null
     sudo rm -rf /opt/ipay/src && sudo mv /opt/ipay/src.new /opt/ipay/src"
 
-ssh "$HOST" "cd /opt/ipay/src && sudo docker compose -p ipay -f docker-compose.prod.yml up -d --build --remove-orphans"
+ssh "$HOST" "sudo sh -c 'cd /opt/ipay/src && docker compose -p ipay -f docker-compose.prod.yml up -d --build --remove-orphans'"
 echo "Deployed $REV to $HOST."

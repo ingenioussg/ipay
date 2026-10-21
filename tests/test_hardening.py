@@ -1,4 +1,5 @@
-"""Server hardening: setup locked behind SETUP_TOKEN, sign-in throttled per account."""
+"""Server hardening: setup locked behind SETUP_TOKEN, sign-in throttled per account.
+Security headers are checked on every page by test_flow.test_pages_render."""
 
 from conftest import csrf_of, hx_post
 
@@ -19,8 +20,3 @@ def test_sign_in_throttled_after_repeated_failures(client):
     codes = [hx_post(client, "/login", form, token).status_code for _ in range(9)]
     assert codes[:8] == [422] * 8 and codes[8] == 429
     assert hx_post(client, "/login", form, token).get_json()["title"] == "Too many attempts"
-
-
-def test_security_headers(client):
-    r = client.get("/login")
-    assert r.headers["X-Frame-Options"] == "DENY" and r.headers["Cache-Control"] == "no-store"

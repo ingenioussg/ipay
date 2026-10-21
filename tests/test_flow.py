@@ -78,4 +78,5 @@ def test_pages_render(client):
         r = client.get(route)
         body = r.get_data(as_text=True)
         assert r.status_code == 200 and "<title>" in body and "<nav" in body, route
+        assert r.headers["X-Frame-Options"] == "DENY" and r.headers["Cache-Control"] == "no-store", route
     assert client.get("/no-such-page").status_code == 404

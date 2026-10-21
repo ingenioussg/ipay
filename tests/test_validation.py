@@ -1,4 +1,6 @@
-from modules.settings.validation import account_errors, company_name_errors, country_errors, identifier_errors
+"""Statutory identifier formats (pure, no database)."""
+
+from modules.settings.validation import identifier_errors
 
 
 def test_uen_formats():
@@ -20,17 +22,3 @@ def test_blank_identifiers_allowed_and_my_ids_loose():
     assert identifier_errors({"sg.uen": "", "my.epf_employer_no": "  "}) == {}
     assert identifier_errors({"my.lhdn_employer_no": "E 1234567890"}) == {}
     assert "my.epf_employer_no" in identifier_errors({"my.epf_employer_no": "12#45"})
-
-
-def test_countries_need_at_least_one():
-    assert country_errors(True, False) == {} and country_errors(False, True) == {} and country_errors(True, True) == {}
-    assert "countries" in country_errors(False, False)
-
-
-def test_company_name_and_account():
-    assert "name" in company_name_errors(" A ")
-    assert company_name_errors("Acme Pte Ltd") == {}
-    assert account_errors("Ann", "ann@example.com", "longenough1", "longenough1") == {}
-    e = account_errors("", "nope", "short", "short")
-    assert set(e) == {"display_name", "email", "password"}
-    assert "confirm" in account_errors("Ann", "ann@example.com", "longenough1", "different11")

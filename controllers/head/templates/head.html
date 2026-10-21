@@ -1,0 +1,21 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="iPay | Payroll for Singapore and Malaysia">
+<meta name="author" content="Ingenious Business Software Pte Ltd">
+<meta name="theme-color" content="#f8f9fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161c" media="(prefers-color-scheme: dark)">
+<script>(()=>{try{const t=localStorage.getItem("theme")||"system";const d=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}catch(e){}})()</script>
+
+<!-- CDN Deployment Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<!-- -->
+
+<!-- Design system -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/design-system/variables.css') }}?v={{ v }}"/>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/controllers/postloginnavbar/style.css') }}?v={{ v }}"/>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/controllers/preloginnavbar/style.css') }}?v={{ v }}"/>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
+<script src="{{ url_for('static', filename='javascript/design-system/app.js') }}?v={{ v }}" defer></script>
+<!-- -->

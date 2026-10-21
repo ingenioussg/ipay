@@ -1,0 +1,7 @@
+/* Signed-out top bar: floats over the auth screens. */
+.prelogin-nav { position: fixed; top: 0; right: 0; z-index: 30; display: flex; align-items: center; gap: var(--s-2); padding: var(--s-4) var(--s-6); }
+.prelogin-nav .brand { display: none; }
+@media (max-width: 1024px) {
+  .prelogin-nav { left: 0; justify-content: space-between; background: color-mix(in oklch, var(--bg) 80%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: var(--s-3) var(--s-4); }
+  .prelogin-nav .brand { display: inline-flex; }
+}

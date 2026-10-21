@@ -1,0 +1,77 @@
+# Server stack: etcd + PostgreSQL 16 under Patroni, and the app on Apache + mod_wsgi.
+# The app listens on 127.0.0.1:8080 only; `tailscale serve` gives the tailnet HTTPS access.
+# For a public domain, also start Caddy:  --profile public  (needs IPAY_DOMAIN in .env).
+#   docker compose -p ipay -f docker-compose.prod.yml up -d --build
+# Values come from .env on the server (never committed). See deploy/README.md.
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.12
+    restart: unless-stopped
+    command:
+      - etcd
+      - --name=etcd1
+      - --data-dir=/etcd-data
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://etcd:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://etcd:2380
+      - --initial-cluster=etcd1=http://etcd:2380
+      - --initial-cluster-state=new
+    volumes:
+      - ipay_etcd:/etcd-data
+
+  db:
+    build: deploy/patroni
+    restart: unless-stopped
+    environment:
+      PATRONI_SUPERUSER_PASSWORD: ${PATRONI_SUPERUSER_PASSWORD:?set PATRONI_SUPERUSER_PASSWORD in .env}
+      PATRONI_REPLICATION_PASSWORD: ${PATRONI_REPLICATION_PASSWORD:?set PATRONI_REPLICATION_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-ipay}
+      POSTGRES_USER: ${POSTGRES_USER:-ipay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - ipay_pgdata:/var/lib/postgresql/data
+    depends_on:
+      - etcd
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -d ${POSTGRES_DB:-ipay} -U ${POSTGRES_USER:-ipay}"]
+      interval: 5s
+      retries: 30
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      TRUST_PROXY: "1"
+    ports:
+      - "127.0.0.1:8080:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  proxy:
+    image: caddy:2-alpine
+    profiles: ["public"]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      IPAY_DOMAIN: ${IPAY_DOMAIN:-}
+      ACME_EMAIL: ${ACME_EMAIL:-it@ingenious.sg}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  ipay_etcd:
+  ipay_pgdata:
+  caddy_data:
+  caddy_config:

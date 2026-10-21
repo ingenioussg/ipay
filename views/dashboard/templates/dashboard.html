@@ -1,0 +1,62 @@
+{% extends "dashboard_base.html" %}
+{% from "icons.html" import icon %}
+
+{% block title %}
+    Overview · iPay
+{% endblock title %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1>Good to see you, {{ user.display_name.split(" ")[0] }}</h1>
+        <p>Here is where {{ company.name }} stands.</p>
+    </div>
+    <a class="btn btn-primary" href="/settings">{{ icon("settings") }} Company settings</a>
+</div>
+
+<div class="grid" style="--min:220px">
+    <div class="card card-body stat">
+        <span class="label">{{ icon("users") }} Employees</span>
+        <span class="value" data-count="0">0</span>
+        <span class="faint">Employee records come next</span>
+    </div>
+    <div class="card card-body stat">
+        <span class="label">{{ icon("wallet") }} Next pay run</span>
+        <span class="value">—</span>
+        <span class="faint">After employees and pay items</span>
+    </div>
+    <div class="card card-body stat">
+        <span class="label">{{ icon("globe") }} Payroll countries</span>
+        <span class="row" style="min-height:44px">
+            {% if company.sg_payroll %}<span class="badge badge-danger"><span class="flag flag-sg">SG</span> Singapore</span>{% endif %}
+            {% if company.my_payroll %}<span class="badge badge-accent"><span class="flag flag-my">MY</span> Malaysia</span>{% endif %}
+        </span>
+        <span class="faint">Change in Settings</span>
+    </div>
+    <div class="card card-body stat">
+        <span class="label">{{ icon("sparkles") }} Setup</span>
+        <span class="value"><span data-count="{{ progress }}">{{ progress }}</span>%</span>
+        <span class="faint">{{ steps | selectattr(1) | list | length }} of {{ steps | length }} steps done</span>
+    </div>
+</div>
+
+<div class="grid" style="--min:320px; margin-top:20px">
+    <section class="card">
+        <div class="card-header"><div><h3>Get started</h3><p>Five steps to the first payroll.</p></div></div>
+        <div class="card-body">
+            <ul class="checklist">
+                {% for what, ok in steps %}
+                <li class="{{ 'done' if ok }}"><span class="tick">{% if ok %}{{ icon("check") }}{% endif %}</span><span class="what">{{ what }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+    <section class="card">
+        <div class="card-header"><div><h3>What each country covers</h3><p>Turned on per company in Settings.</p></div></div>
+        <div class="card-body stack" style="gap:16px">
+            <div class="row"><span class="flag flag-sg">SG</span><span>CPF, SDL, SHG funds, FWL · IR8A, IR8S, Appendix 8A · CPF and bank files</span></div>
+            <div class="row"><span class="flag flag-my">MY</span><span>EPF, SOCSO, EIS, PCB/MTD, HRD Corp · EA form, Borang E</span></div>
+        </div>
+    </section>
+</div>
+{% endblock body %}

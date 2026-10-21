@@ -1,0 +1,14 @@
+# Never ship client material, secrets or development files in the image.
+.git
+.venv
+.env
+.env.*
+!.env.example
+documents
+docs
+tests
+.claude
+.pytest_cache
+**/__pycache__
+*.md
+docker-compose*.yml

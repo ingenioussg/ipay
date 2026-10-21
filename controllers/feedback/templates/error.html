@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% include "head.html" %}
+    <title>{{ code }} · iPay</title>
+</head>
+<body>
+    <nav class="sr-only" aria-label="Error"></nav>
+    <main class="error-page">
+        <div class="stack" style="justify-items:center">
+            <div class="code">{{ code }}</div>
+            <h1>{{ title }}</h1>
+            <p class="muted">{{ message }}</p>
+            <a class="btn btn-primary" href="/">Back to iPay</a>
+        </div>
+    </main>
+    {% include "feedback.html" %}
+</body>
+</html>

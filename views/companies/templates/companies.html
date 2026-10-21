@@ -1,0 +1,87 @@
+{% extends "companies_base.html" %}
+{% from "icons.html" import icon %}
+
+{% block title %}
+    Companies · iPay
+{% endblock title %}
+
+{% macro country_toggles(sg=false, my=false) -%}
+<div class="field">
+    <span class="label">Payroll countries</span>
+    <input type="hidden" name="countries">
+    <div class="grid" style="--min:200px; gap:12px">
+        <label class="toggle-card">
+            <span class="body"><span class="title"><span class="flag flag-sg">SG</span> Singapore payroll</span>
+                <span class="desc">CPF, SDL, SHG funds, IR8A</span></span>
+            <span class="switch"><input type="checkbox" name="sg_payroll" {{ 'checked' if sg }}><span class="track"></span><span class="thumb"></span></span>
+        </label>
+        <label class="toggle-card">
+            <span class="body"><span class="title"><span class="flag flag-my">MY</span> Malaysian payroll</span>
+                <span class="desc">EPF, SOCSO, EIS, PCB, EA form</span></span>
+            <span class="switch"><input type="checkbox" name="my_payroll" {{ 'checked' if my }}><span class="track"></span><span class="thumb"></span></span>
+        </label>
+    </div>
+    <span class="hint">Turn on one or both. You can change this later in Settings.</span>
+</div>
+{%- endmacro %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1>Companies</h1>
+        <p>Each company keeps its own employees, payroll and settings.</p>
+    </div>
+    <button class="btn btn-primary" type="button" data-action="open-modal" data-target="new-company">{{ icon("plus") }} New company</button>
+</div>
+
+{% if companies %}
+<div class="grid" style="--min:260px">
+    {% for c in companies %}
+    <form hx-post="/companies/switch" hx-swap="none">
+        <input type="hidden" name="company_id" value="{{ c.id }}">
+        <button class="card card-body card-link" type="submit" style="width:100%;text-align:left;font:inherit;color:inherit;display:grid;gap:14px">
+            <span class="spread">
+                <span class="row"><span class="user-avatar" style="border-radius:10px;width:40px;height:40px">{{ c.name[:1] | upper }}</span>
+                    <strong style="font-size:16px">{{ c.name }}</strong></span>
+                {% if company and company.id == c.id %}<span class="badge badge-success"><span class="dot"></span> Open</span>{% endif %}
+            </span>
+            <span class="row">
+                {% if c.sg_payroll %}<span class="flag flag-sg">SG</span>{% endif %}
+                {% if c.my_payroll %}<span class="flag flag-my">MY</span>{% endif %}
+                <span class="faint" style="font-size:13px">Created {{ c.created_at.strftime("%d %b %Y") }}</span>
+            </span>
+        </button>
+    </form>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="empty">
+        <div class="art">{{ icon("building") }}</div>
+        <h3>No companies yet</h3>
+        <p>Add the first company to start running payroll.</p>
+        <button class="btn btn-primary" type="button" data-action="open-modal" data-target="new-company">{{ icon("plus") }} New company</button>
+    </div>
+</div>
+{% endif %}
+
+<dialog class="modal" id="new-company" aria-labelledby="new-company-title" style="width:min(560px, calc(100vw - 32px))">
+    <form hx-post="/companies" hx-swap="none" novalidate>
+        <div class="modal-form-body">
+            <div>
+                <div class="modal-title" id="new-company-title">New company</div>
+                <p class="modal-message">Its payroll data lives in its own space, separate from other companies.</p>
+            </div>
+            <div class="field">
+                <label for="new-name">Company name</label>
+                <input class="input" id="new-name" name="name" placeholder="e.g. Ingenious Business Software Pte Ltd">
+            </div>
+            {{ country_toggles(sg=true) }}
+        </div>
+        <div class="modal-actions">
+            <button class="btn" type="button" data-action="close-modal">Cancel</button>
+            <button class="btn btn-primary" type="submit"><span class="spinner"></span> Create company</button>
+        </div>
+    </form>
+</dialog>
+{% endblock body %}

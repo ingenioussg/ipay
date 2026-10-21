@@ -1,0 +1,33 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.ppk
+secrets/
+*.secret
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+*.log
+
+# Client material — NEVER commit (legacy binaries, decompiled source, client data)
+documents/*
+!documents/README.md
+
+# The GitHub repository is public. These describe security holes in the legacy app,
+# which is still in use at customers: keep them local until the repository is private.
+docs/legacy/
+docs/design/decisions.md

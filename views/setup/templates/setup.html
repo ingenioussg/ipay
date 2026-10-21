@@ -1,0 +1,53 @@
+{% extends "setup_base.html" %}
+{% from "icons.html" import icon, logo %}
+
+{% block title %}
+    Set up · iPay
+{% endblock title %}
+
+{% block body %}
+<div class="auth">
+    <section class="auth-art">
+        <a class="brand" href="/">{{ logo() }} iPay</a>
+        <div>
+            <p class="quote">Let's set up your workspace.</p>
+            <div class="points">
+                <div>{{ icon("shield") }} You become the owner of this iPay workspace</div>
+                <div>{{ icon("building") }} Next, add your first company</div>
+                <div>{{ icon("globe") }} Turn on Singapore, Malaysia, or both</div>
+            </div>
+        </div>
+        <p style="position:relative;z-index:1;opacity:.7;font-size:13px">This screen closes once the owner exists.</p>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card">
+            <div>
+                <span class="badge badge-accent">{{ icon("sparkles") }} First run</span>
+                <h1 style="margin-top:12px">Create the owner account</h1>
+                <p class="muted" style="margin-top:6px">This account manages companies and users.</p>
+            </div>
+            <form class="form" hx-post="/setup" hx-swap="none" novalidate>
+                <input type="hidden" name="token" value="{{ request.args.get('token', '') }}">
+                <div class="field">
+                    <label for="display_name">Your name</label>
+                    <div class="input-with-icon">{{ icon("user") }}<input class="input" id="display_name" name="display_name" autocomplete="name" autofocus></div>
+                </div>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <div class="input-with-icon">{{ icon("mail") }}<input class="input" id="email" name="email" type="email" autocomplete="username"></div>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">{{ icon("lock") }}<input class="input" id="password" name="password" type="password" autocomplete="new-password"></div>
+                    <span class="hint">At least 10 characters.</span>
+                </div>
+                <div class="field">
+                    <label for="confirm">Confirm password</label>
+                    <div class="input-with-icon">{{ icon("lock") }}<input class="input" id="confirm" name="confirm" type="password" autocomplete="new-password"></div>
+                </div>
+                <button class="btn btn-primary btn-lg btn-block" type="submit"><span class="spinner"></span> Create account {{ icon("arrow") }}</button>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock body %}

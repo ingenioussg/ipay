@@ -1,0 +1,9 @@
+{# Shared feedback surfaces: request progress bar, the modal used for every error, toasts, flashed messages. #}
+<div id="progress" class="progress" aria-hidden="true"></div>
+{% if demo %}<div class="demo-pill" role="note">Demo · no real payroll data</div>{% endif %}
+<div id="csrf" data-token="{{ csrf_token() }}" hidden></div>
+<dialog id="app-modal" class="modal" aria-labelledby="app-modal-title"></dialog>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+{% for category, message in get_flashed_messages(with_categories=true) %}
+<span data-flash="{{ message }}" data-variant="{{ 'success' if category == 'message' else category }}" hidden></span>
+{% endfor %}

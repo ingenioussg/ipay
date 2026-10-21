@@ -1,0 +1,20 @@
+# Local development database. Production uses the shared Patroni cluster.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ipay}
+      POSTGRES_USER: ${POSTGRES_USER:-ipay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - ipay_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ipay} -d ${POSTGRES_DB:-ipay}"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  ipay_pgdata:

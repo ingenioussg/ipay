@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% include "head.html" %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/views/login/style.css') }}?v={{ v }}"/>
+    <script src="{{ url_for('static', filename='javascript/views/login/script.js') }}?v={{ v }}" defer></script>
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body hx-boost="true">
+    {% include "preloginnavbar.html" %}
+    {% block body %}{% endblock body %}
+    {% include "feedback.html" %}
+</body>
+</html>

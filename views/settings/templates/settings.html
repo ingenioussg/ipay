@@ -1,0 +1,76 @@
+{% extends "settings_base.html" %}
+{% from "icons.html" import icon %}
+
+{% block title %}
+    Settings · iPay
+{% endblock title %}
+
+{% macro id_fields(fields) -%}
+<div class="form-grid">
+    {% for key, (label, _pattern, hint) in fields.items() %}
+    <div class="field">
+        <label for="{{ key }}">{{ label }}</label>
+        <input class="input" id="{{ key }}" name="{{ key }}" value="{{ profile.get(key) or '' }}" autocomplete="off" spellcheck="false">
+        <span class="hint">{{ hint }}</span>
+    </div>
+    {% endfor %}
+</div>
+{%- endmacro %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1>Company settings</h1>
+        <p>Profile, payroll countries and statutory identifiers for {{ company.name }}.</p>
+    </div>
+</div>
+
+<form class="stack" hx-post="/settings" hx-swap="none" novalidate>
+    <section class="card">
+        <div class="card-header"><div><h3>Company</h3><p>Shown on payslips and statutory forms.</p></div></div>
+        <div class="card-body">
+            <div class="field" style="max-width:520px">
+                <label for="name">Company name</label>
+                <input class="input" id="name" name="name" value="{{ company.name }}">
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-header"><div><h3>Payroll countries</h3><p>Run Singapore payroll, Malaysian payroll, or both for this company.</p></div></div>
+        <div class="card-body field">
+            <input type="hidden" name="countries">
+            <div class="grid" style="--min:260px; gap:12px">
+                <label class="toggle-card">
+                    <span class="body"><span class="title"><span class="flag flag-sg">SG</span> Singapore payroll</span>
+                        <span class="desc">CPF, SDL, SHG funds, FWL · IR8A, IR8S, Appendix 8A · CPF and bank files</span></span>
+                    <span class="switch"><input type="checkbox" id="sg_payroll" name="sg_payroll" {{ 'checked' if company.sg_payroll }}><span class="track"></span><span class="thumb"></span></span>
+                </label>
+                <label class="toggle-card">
+                    <span class="body"><span class="title"><span class="flag flag-my">MY</span> Malaysian payroll</span>
+                        <span class="desc">EPF, SOCSO, EIS, PCB/MTD, HRD Corp · EA form, Borang E</span></span>
+                    <span class="switch"><input type="checkbox" id="my_payroll" name="my_payroll" {{ 'checked' if company.my_payroll }}><span class="track"></span><span class="thumb"></span></span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <div class="reveal" data-reveal="sg_payroll"><div class="reveal-inner">
+        <section class="card">
+            <div class="card-header"><div><h3><span class="flag flag-sg">SG</span>&nbsp; Singapore identifiers</h3><p>Used on CPF submissions and IRAS returns.</p></div></div>
+            <div class="card-body">{{ id_fields(sg_fields) }}</div>
+        </section>
+    </div></div>
+
+    <div class="reveal" data-reveal="my_payroll"><div class="reveal-inner">
+        <section class="card">
+            <div class="card-header"><div><h3><span class="flag flag-my">MY</span>&nbsp; Malaysian identifiers</h3><p>Used on EPF, SOCSO/EIS, PCB and HRD Corp submissions.</p></div></div>
+            <div class="card-body">{{ id_fields(my_fields) }}</div>
+        </section>
+    </div></div>
+
+    <div class="row" style="justify-content:flex-end">
+        <button class="btn btn-primary btn-lg" type="submit"><span class="spinner"></span> Save settings</button>
+    </div>
+</form>
+{% endblock body %}

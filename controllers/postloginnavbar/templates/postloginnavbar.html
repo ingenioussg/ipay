@@ -1,0 +1,46 @@
+{% from "icons.html" import icon, logo %}
+{% set here = request.path %}
+{% macro nav_link(href, name, label, soon=false) -%}
+<a href="{{ href }}" {% if here.startswith(href) %}aria-current="page"{% endif %}>{{ icon(name) }} {{ label }}{% if soon %}<span class="soon">Soon</span>{% endif %}</a>
+{%- endmacro %}
+<aside class="sidebar" id="sidebar">
+    <a class="brand" href="/dashboard">{{ logo() }} iPay</a>
+    <nav class="nav" aria-label="Main">
+        {{ nav_link("/dashboard", "grid", "Overview") }}
+        <div class="nav-label">Payroll</div>
+        {{ nav_link("/employees", "users", "Employees", true) }}
+        {{ nav_link("/payroll", "wallet", "Pay runs", true) }}
+        {{ nav_link("/leave", "calendar", "Leave", true) }}
+        {{ nav_link("/statutory", "landmark", "Statutory", true) }}
+        {{ nav_link("/reports", "file", "Reports", true) }}
+        <div class="nav-label">Company</div>
+        {{ nav_link("/settings", "settings", "Settings") }}
+        {{ nav_link("/companies", "building", "Companies") }}
+    </nav>
+    <div class="sidebar-foot">
+        {% if company %}
+        <a class="company-pill" href="/companies" title="Switch company">
+            <span class="avatar">{{ company.name[:1] | upper }}</span>
+            <span class="meta"><strong>{{ company.name }}</strong>
+                <span>{% if company.sg_payroll %}SG{% endif %}{% if company.sg_payroll and company.my_payroll %} · {% endif %}{% if company.my_payroll %}MY{% endif %} payroll</span></span>
+            {{ icon("switch") }}
+        </a>
+        {% endif %}
+    </div>
+</aside>
+<div class="scrim" data-action="nav-close"></div>
+<header class="topbar">
+    <button class="btn btn-ghost btn-icon menu-btn" type="button" data-action="nav-toggle" aria-label="Open menu" aria-controls="sidebar">{{ icon("menu") }}</button>
+    <div class="crumbs">{% if company %}<span>{{ company.name }}</span><span>/</span>{% endif %}<strong>{{ crumb or "" }}</strong></div>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost btn-icon" type="button" data-action="theme" aria-label="Change theme">{{ icon("theme") }}</button>
+    {% if user %}
+    <div class="user-chip">
+        <span class="user-avatar" aria-hidden="true">{{ user.display_name[:1] | upper }}</span>
+        <span class="name">{{ user.display_name }}</span>
+        <form hx-post="/login/logout" hx-swap="none">
+            <button class="btn btn-ghost btn-icon" type="submit" aria-label="Sign out" title="Sign out">{{ icon("logout") }}</button>
+        </form>
+    </div>
+    {% endif %}
+</header>

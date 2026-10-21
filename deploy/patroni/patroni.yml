@@ -1,0 +1,55 @@
+# Single-member Patroni cluster. Passwords come from the environment:
+# PATRONI_SUPERUSER_PASSWORD and PATRONI_REPLICATION_PASSWORD.
+scope: ipay-cluster
+name: ipay-node1
+
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: db:8008
+
+etcd3:
+  hosts: etcd:2379
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      parameters:
+        max_connections: 100
+        shared_buffers: 256MB
+        wal_level: replica
+        max_wal_senders: 5
+        max_replication_slots: 5
+  initdb:
+    - encoding: UTF8
+    - locale: C.UTF-8
+    - data-checksums
+  pg_hba:
+    - local all all trust
+    - host replication replicator 0.0.0.0/0 scram-sha-256
+    - host all all 0.0.0.0/0 scram-sha-256
+  post_bootstrap: /usr/local/bin/post_bootstrap.sh
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: db:5432
+  data_dir: /var/lib/postgresql/data/pgdata
+  bin_dir: /usr/lib/postgresql/16/bin
+  authentication:
+    superuser:
+      username: postgres
+    replication:
+      username: replicator
+  parameters:
+    unix_socket_directories: /var/run/postgresql
+    password_encryption: scram-sha-256
+
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false

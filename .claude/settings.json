@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'CAVEMAN MODE ON (mandatory for this reply): talk caveman in ALL chat text, including status reports, test reports, explanations, warnings, questions and final summaries. Drop articles (a, an, the), filler, pleasantries and helper verbs. Short fragments. Code, paths, commands and numbers verbatim. Files you write stay normal English. TOKEN RULE ON: answer first; failures, skips and unverified items first; question 1-3 sentences, task end 1-3 lines unless owner asks for detail; even then caveman. SURGICAL TESTING ON: code or config change -> test blast radius only, once. AGENTS: default 0; wider radius -> 1, max 2-3; ultracode on -> handful total (aim <=5), never more than 8 running at once, workflows batch <=8 in flight; more only with owner go-ahead after stating agent count and token cost. Rules: .claude/skills/caveman/SKILL.md, .claude/skills/output-token-optimization/SKILL.md, .claude/skills/surgical-testing/SKILL.md'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

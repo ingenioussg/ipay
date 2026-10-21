@@ -1,0 +1,42 @@
+{% extends "login_base.html" %}
+{% from "icons.html" import icon, logo %}
+
+{% block title %}
+    Sign in · iPay
+{% endblock title %}
+
+{% block body %}
+<div class="auth">
+    <section class="auth-art">
+        <a class="brand" href="/">{{ logo() }} iPay</a>
+        <div>
+            <p class="quote">Payroll for Singapore and Malaysia, in one calm place.</p>
+            <div class="points">
+                <div>{{ icon("check") }} CPF, SDL, SHG funds and IR8A</div>
+                <div>{{ icon("check") }} EPF, SOCSO, EIS and PCB</div>
+                <div>{{ icon("check") }} One company, one or both countries</div>
+            </div>
+        </div>
+        <p style="position:relative;z-index:1;opacity:.7;font-size:13px">© Ingenious Business Software</p>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card">
+            <div>
+                <h1>Welcome back</h1>
+                <p class="muted" style="margin-top:6px">Sign in to your payroll workspace.</p>
+            </div>
+            <form class="form" hx-post="/login" hx-swap="none" novalidate>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <div class="input-with-icon">{{ icon("mail") }}<input class="input" id="email" name="email" type="email" autocomplete="username" autofocus></div>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">{{ icon("lock") }}<input class="input" id="password" name="password" type="password" autocomplete="current-password"></div>
+                </div>
+                <button class="btn btn-primary btn-lg btn-block" type="submit"><span class="spinner"></span> Sign in</button>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock body %}
